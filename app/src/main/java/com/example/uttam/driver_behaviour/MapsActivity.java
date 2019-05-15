@@ -567,7 +567,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         StringBuilder googleDirectionsUrl = new StringBuilder("https://maps.googleapis.com/maps/api/directions/json?");
         googleDirectionsUrl.append("origin=" + latitude + "," + longitude);
         googleDirectionsUrl.append("&destination=" + end_latitude + "," + end_longitude);
-        googleDirectionsUrl.append("&key=" + "AIzaSyCAcfy-02UHSu2F6WeQ1rhQhkCr51eBL9g");
+        googleDirectionsUrl.append("&key=" + "AIzaSyCUotT8TcfJBSXft-_579n3V-mL8LJcq2w");
 
         return googleDirectionsUrl.toString();
     }
@@ -723,70 +723,74 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //Computing Speed and speed limit
         //computing if harsh acceleration and/or brake is applied
-        RequestQueue requestQueue = newRequestQueue(getApplicationContext());
-        JsonObjectRequest request = new JsonObjectRequest(com.android.volley.Request.Method.GET, "https://roads.googleapis.com/v1/speedLimits?path=" + location.getLatitude() + "," + location.getLongitude() + "&key=AIzaSyAcXgGZ0d9ujapO3SMXvq5EeVG1Utb4wVI", null, new com.android.volley.Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                try {
-                    JSONObject obj = response.getJSONArray("speedLimits").getJSONObject(0);
-                    speedlimit = obj.getString("speedLimit");
-                    //Toast.makeText(getApplicationContext(),speedlimit,Toast.LENGTH_SHORT).show();
-                    mLocationReference.child("latitude").setValue(location.getLatitude());
-                    mLocationReference.child("longitude").setValue(location.getLongitude());
-                    double kph = (Double.parseDouble(speedlimit)) * 0.621;
-                    mph = (int) Math.round(kph);
-                    speedLimitText.setText("Limit:" + "" + Integer.toString(mph));
-                    pause();
-                    currentSpeed = location.getSpeed() * 2.23f;
-                    CharSequence text = "Speed Limit Exceeded!";
-                    tBreakEnd = System.currentTimeMillis();
-                    long breakElapsed = tBreakStart - tBreakEnd;
-                    double breakElapsedSeconds = breakElapsed / 1000.0;
-                    int breakSeconds = (int) (breakElapsedSeconds % 60);
-                    if (breakSeconds % 5 == 0) {
-                        tempSpeed = currentSpeed;
-                    }
-                    if (breakSeconds % 2 == 0 && tempSpeed >= 35 && (tempSpeed - currentSpeed >= 20)) {
-                        // harsh brake case
-                        suddenBreaksCount++;
-                        isBrakesApplied = true;
-                    } else {
-                        isBrakesApplied = false;
-                    }
-                    if (breakSeconds % 2 == 0 && currentSpeed - tempSpeed >= 20) {
-                        // sudden acceleration case
-                        suddenAcceleration++;
-                    }
-                    // determining speed and over the speed cases
-                    if (currentSpeed > mph) {
-                        if (!isRunning()) {
-                            start();
-                        } else {
-                            resume();
-                        }
-                        if (flag == 0) {
-                            limitExceedCount++;
-                            flag = 1;
-                        }
-                    }
-                    if (currentSpeed < mph) {
-                        flag = 0;
-                    }
-                    if (maxSpeed < currentSpeed) {
-                        maxSpeed = (int) currentSpeed;
-                    }
+//        RequestQueue requestQueue = newRequestQueue(getApplicationContext());
+//        JsonObjectRequest request = new JsonObjectRequest(com.android.volley.Request.Method.GET, "https://roads.googleapis.com/v1/speedLimits?path=" + location.getLatitude() + "," + location.getLongitude() + "&key=AIzaSyAcXgGZ0d9ujapO3SMXvq5EeVG1Utb4wVI", null, new com.android.volley.Response.Listener<JSONObject>() {
+//            @Override
+//            public void onResponse(JSONObject response) {
+//                try {
+//                    JSONObject obj = response.getJSONArray("speedLimits").getJSONObject(0);
+//
+//
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }, new com.android.volley.Response.ErrorListener() {
+//            @Override
+//            public void onErrorResponse(VolleyError error) {
+//                Toast.makeText(getApplicationContext(), "Error" + error.toString(), Toast.LENGTH_SHORT).show();
+//            }
+//        });
+//        requestQueue.add(request);
 
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+        //hard coding for now
+        speedlimit = "30";
+        //Toast.makeText(getApplicationContext(),speedlimit,Toast.LENGTH_SHORT).show();
+        mLocationReference.child("latitude").setValue(location.getLatitude());
+        mLocationReference.child("longitude").setValue(location.getLongitude());
+        double kph = (Double.parseDouble(speedlimit)) * 0.621;
+        mph = (int) Math.round(kph);
+        speedLimitText.setText("Limit:" + "" + Integer.toString(mph));
+        pause();
+        currentSpeed = location.getSpeed() * 2.23f;
+        CharSequence text = "Speed Limit Exceeded!";
+        tBreakEnd = System.currentTimeMillis();
+        long breakElapsed = tBreakStart - tBreakEnd;
+        double breakElapsedSeconds = breakElapsed / 1000.0;
+        int breakSeconds = (int) (breakElapsedSeconds % 60);
+        if (breakSeconds % 5 == 0) {
+            tempSpeed = currentSpeed;
+        }
+        if (breakSeconds % 2 == 0 && tempSpeed >= 35 && (tempSpeed - currentSpeed >= 20)) {
+            // harsh brake case
+            suddenBreaksCount++;
+            isBrakesApplied = true;
+        } else {
+            isBrakesApplied = false;
+        }
+        if (breakSeconds % 2 == 0 && currentSpeed - tempSpeed >= 20) {
+            // sudden acceleration case
+            suddenAcceleration++;
+        }
+        // determining speed and over the speed cases
+        if (currentSpeed > mph) {
+            if (!isRunning()) {
+                start();
+            } else {
+                resume();
             }
-        }, new com.android.volley.Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(), "Error" + error.toString(), Toast.LENGTH_SHORT).show();
+            if (flag == 0) {
+                limitExceedCount++;
+                flag = 1;
             }
-        });
-        requestQueue.add(request);
+        }
+        if (currentSpeed < mph) {
+            flag = 0;
+        }
+        if (maxSpeed < currentSpeed) {
+            maxSpeed = (int) currentSpeed;
+        }
+
         currentSpeedText.setText("Speed: " + new DecimalFormat("##").format(currentSpeed));
     }
 
