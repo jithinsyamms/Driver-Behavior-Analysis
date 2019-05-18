@@ -465,6 +465,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy' 'HH:mm:ss", Locale.US);
         sdf.setTimeZone(TimeZone.getTimeZone("GMT-6"));
         details.add("DataAndTime :" + sdf.format(new Date()));
+
+
         String id = mRootReference.push().getKey();
         mRootReference.child(id).setValue(details);
     }
@@ -1335,7 +1337,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
 
             if (currentSpeed != 0) {
-                Log.d("Debugging","currentSpeed = " + currentSpeed);
+
                 if (currentSpeed > speedLimit) {
                     factorSpeed = 10;
                     runOnUiThread(new Runnable() {
@@ -1348,7 +1350,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                     });
                 } else {
-                    factorSpeed = 1;
+                    factorSpeed = 0;
                 }
 
                 if (isBrakesApplied == true) {
