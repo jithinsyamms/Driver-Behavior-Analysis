@@ -63,11 +63,18 @@ public class ViewDatabase extends AppCompatActivity {
                 String s0 = dataSnapshot.child("0").getValue().toString();
                 String s7 = dataSnapshot.child("7").getValue().toString();
                 String s8 = dataSnapshot.child("8").getValue().toString();
+                String s3 = dataSnapshot.child("3").getValue().toString();
+                String s4 = dataSnapshot.child("4").getValue().toString();
+                String s5 = dataSnapshot.child("5").getValue().toString();
+
 
                 list.add("              Session: "+counter);
                 list.add(s8);
                 list.add(s0);
                 list.add(s7);
+                list.add(s3);
+                list.add(s4);
+                list.add(s5);
                 adapter.notifyDataSetChanged();
                 //Toast.makeText(getApplicationContext(),list.toStringText(),Toast.LENGTH_SHORT).show();
             }

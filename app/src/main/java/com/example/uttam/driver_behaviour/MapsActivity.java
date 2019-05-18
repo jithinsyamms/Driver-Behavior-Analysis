@@ -193,7 +193,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private float[] rotationMatrix = new float[9];
     private float timestamp;
     private boolean initState = true;
-    private Timer fuseTimer = new Timer();
+    private Timer fuseTimer;
     private String SHARED_PREF_NAME = "driverbehaviorapp";
     private boolean mInitialized = false;
     Boolean yAccChange = false;
@@ -289,6 +289,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         initListeners();
         // wait for one second until gyroscope and magnetometer/accelerometer
         // data is initialised then scedule the complementary filter task
+
+    }
+
+    private void startTimers(){
+        fuseTimer = new Timer();
         fuseTimer.scheduleAtFixedRate(new calculateFusedOrientationTask(),
                 2000, TIME_CONSTANT);
         // analysing behavior every 2 sec
@@ -296,6 +301,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //resetting the sensor values every 30 sec
         fuseTimer.scheduleAtFixedRate(new ResetSensorValues(), 1000, 30000);
+    }
+    private void stopTimers(){
+        fuseTimer.cancel();
+        fuseTimer = null;
     }
 
     // initializing the sensors
@@ -344,6 +353,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 btnBack.setVisibility(View.VISIBLE);
                 currentSpeedText.setVisibility(View.VISIBLE);
                 speedLimitText.setVisibility(View.VISIBLE);
+                startTimers();
             } else {
                 // END OF THE TRIP
                 // values are computed after the end of thr trip
@@ -372,6 +382,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mScoreReference.setValue(result);
                 Toast.makeText(getApplicationContext(), "Trip Score: " + result, Toast.LENGTH_LONG).show();
                 onadd();
+                stopTimers();
             }
         }
     }
@@ -743,8 +754,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        });
 //        requestQueue.add(request);
 
+        //calculate only when trip is started
+        if (i != 1){
+            return;
+        }
+
         //hard coding for now
-        speedlimit = "30";
+        speedlimit = "50";
         //Toast.makeText(getApplicationContext(),speedlimit,Toast.LENGTH_SHORT).show();
         mLocationReference.child("latitude").setValue(location.getLatitude());
         mLocationReference.child("longitude").setValue(location.getLongitude());
@@ -790,8 +806,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (maxSpeed < currentSpeed) {
             maxSpeed = (int) currentSpeed;
         }
-
-        currentSpeedText.setText("Speed: " + new DecimalFormat("##").format(currentSpeed));
+        currentSpeedText.setText("" + new DecimalFormat("##").format(currentSpeed));
     }
 
     @Override
@@ -1311,6 +1326,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         @Override
         public void run() {
+
             // see flowchart in the report to better understand the analysis
             if (mph != 0) {
                 speedLimit = mph;
@@ -1319,11 +1335,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
 
             if (currentSpeed != 0) {
+                Log.d("Debugging","currentSpeed = " + currentSpeed);
                 if (currentSpeed > speedLimit) {
                     factorSpeed = 10;
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+
+                            Log.d("Debugging","speed is above the limit in Behavior analysis");
                             Snackbar.make(mainLayout, "You speed is above the limit, please drive within the speedlimit", Snackbar.LENGTH_SHORT).show();
                             playSound();
                         }
@@ -1337,6 +1356,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            Log.d("Debugging","Sudden brake detected in Behavior analysis");
                             Snackbar.make(mainLayout, "You shouldn't apply sudden brakes, please be careful", Snackbar.LENGTH_SHORT).show();
                             playSound();
                         }
@@ -1369,6 +1389,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
+                                    Log.d("Debugging","Harsh acceleration detected in Behavior analysis");
                                     Snackbar.make(mainLayout, "Harsh acceleration has been detected, please be safe", Snackbar.LENGTH_SHORT).show();
                                     playSound();
                                 }
@@ -1392,6 +1413,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
+                                    Log.d("Debugging","Harsh unsafe turn detected in Behavior analysis");
                                     Snackbar.make(mainLayout, "Harsh unsafe turn has been detected, please be safe", Snackbar.LENGTH_SHORT).show();
                                     playSound();
                                 }

@@ -34,6 +34,10 @@ public class UserLoginPageActivity extends AppCompatActivity implements  View.On
         LoginRef = database.getReference("Users");
         mEmail = (EditText) findViewById(R.id.email);
         mPassword = (EditText) findViewById(R.id.password);
+
+        mEmail.setText("test1");
+        mPassword.setText("abcdef");
+
         btnLogin = (Button)findViewById(R.id.logIn);
         btnLogin.setOnClickListener(this);
     }
@@ -69,7 +73,8 @@ public class UserLoginPageActivity extends AppCompatActivity implements  View.On
 
                         if (password.equals(pass)) {
                             mPassword.setError(null);
-                            Toast.makeText(getApplicationContext(),"Correct",Toast.LENGTH_SHORT).show();
+
+
                             Intent i = new Intent(UserLoginPageActivity.this,MainMenu.class);
                             i.putExtra("userid",UserN);
                             startActivity(i);
