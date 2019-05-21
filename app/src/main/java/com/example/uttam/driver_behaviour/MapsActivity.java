@@ -81,8 +81,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         GoogleMap.OnMarkerDragListener,
         SensorEventListener {
 
-    private Button btnSearch, btnDirections, btnStart, btnBack;
-    private EditText searchField;
+    private Button btnStart;
     private TextView speedLimitText, currentSpeedText;
     private int turns, suddenAcceleration = 0;
     private float totalScore = 10;
@@ -220,13 +219,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps);
+        setContentView(R.layout.activity_maps_new);
 
-        btnDirections = findViewById(R.id.location_directions);
-        btnSearch = findViewById(R.id.location_search);
+
         btnStart = findViewById(R.id.navigation_start);
-        btnBack = findViewById(R.id.B_back);
-        searchField = findViewById(R.id.query_location);
         speedLimitText = findViewById(R.id.speedLimit);
         currentSpeedText = findViewById(R.id.currentSpeed);
         score = findViewById(R.id.score);
@@ -326,10 +322,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     // check whether the location has been given by the user
     public void startTrip(View view) {
         //get location of the destination
-        String input = searchField.getText().toString().trim();
-        if (input.isEmpty()) {
-            searchField.setError("Cannot be blank");
-        } else {
+
             if (i == 0) {
                 //DURING THE TRIP
                 // during the start of a trip, values are initialized
@@ -347,10 +340,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18));
                 // making changes to the UI
-                btnSearch.setVisibility(View.GONE);
-                btnDirections.setVisibility(View.GONE);
-                searchField.setVisibility(View.GONE);
-                btnBack.setVisibility(View.VISIBLE);
+
+
+
                 currentSpeedText.setVisibility(View.VISIBLE);
                 speedLimitText.setVisibility(View.VISIBLE);
                 startTimers();
@@ -384,7 +376,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 onadd();
                 stopTimers();
             }
-        }
+
     }
 
     // time is computed
@@ -585,6 +577,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return googleDirectionsUrl.toString();
     }
 
+    private String getGoogleApiKey(){
+        return getString(R.string.google_key);
+    }
+
     private String getUrl(double latitude, double longitude, String nearbyPlace) {
         StringBuilder googlePlacesUrl = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
         googlePlacesUrl.append("location=" + latitude + "," + longitude);
@@ -624,7 +620,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     // on changing location
     @Override
     public void onLocationChanged(final Location location) {
-        Log.d("onLocationChanged", "entered");
+
 
         mLastLocation = location;
         if (mCurrLocationMarker != null) {
@@ -647,54 +643,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
         mCurrLocationMarker = mMap.addMarker(markerOptions);
 
-        mUsersLocation.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                if (dataSnapshot.hasChild("Location") && dataSnapshot.hasChild("Score") && !(dataSnapshot.child("UserName").getValue().equals(Name))) {
-                    String loc = dataSnapshot.child("Location").getValue().toString();
-                    if (!loc.isEmpty()) {
-                        String[] strSplit = loc.split("\\s*,\\s*");
-                        String latitudeString = strSplit[0].substring(10, 17);
-                        String longitudeString = strSplit[1].substring(10, 18);
-                        float lat = Float.parseFloat(latitudeString);
-                        float lng = Float.parseFloat(longitudeString);
-                        LatLng latLng = new LatLng(lat, lng);
-                        MarkerOptions markerOptionsUser = new MarkerOptions();
-                        markerOptionsUser.position(latLng);
-                        String sScore = dataSnapshot.child("Score").getValue().toString();
-                        // assigning red to unsafe drivers and green to safe drivers
-                        if(Float.parseFloat(sScore)<=5.0){
-                            markerOptionsUser.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-                        }else{
-                            markerOptionsUser.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-                        }
 
-                        mUserLocationMarker = mMap.addMarker(markerOptionsUser);
-                    }
-                }
-            }
-
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
 
         //move map camera
         if (i == 1) {
@@ -756,10 +705,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        });
 //        requestQueue.add(request);
 
-        //calculate only when trip is started
-        if (i != 1){
-            return;
-        }
+
 
         //hard coding for now
         speedlimit = "50";
@@ -768,7 +714,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mLocationReference.child("longitude").setValue(location.getLongitude());
         double kph = (Double.parseDouble(speedlimit)) * 0.621;
         mph = (int) Math.round(kph);
-        speedLimitText.setText("Limit:" + "" + Integer.toString(mph));
+        speedLimitText.setText("Limit:\n" + "" + Integer.toString(mph) +" mph");
         pause();
         currentSpeed = location.getSpeed() * 2.23f;
         CharSequence text = "Speed Limit Exceeded!";
@@ -808,7 +754,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (maxSpeed < currentSpeed) {
             maxSpeed = (int) currentSpeed;
         }
-        currentSpeedText.setText("" + new DecimalFormat("##").format(currentSpeed));
+        currentSpeedText.setText("Speed:\n" + new DecimalFormat("##").format(currentSpeed) +" mph");
     }
 
     @Override
@@ -819,12 +765,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     // on pressing Back during he TRIP
     public void back(View view) {
         // making changes to the UI
-        btnSearch.setVisibility(View.VISIBLE);
-        btnDirections.setVisibility(View.VISIBLE);
-        searchField.setVisibility(View.VISIBLE);
-        LinearLayout one = findViewById(R.id.linearLayout);
-        one.setVisibility(View.VISIBLE);
-        btnBack.setVisibility(View.GONE);
+
         currentSpeedText.setVisibility(View.INVISIBLE);
         speedLimitText.setVisibility(View.INVISIBLE);
         mMap.stopAnimation();

@@ -17,7 +17,7 @@ public class HomePageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_page);
         flipper = (ViewFlipper)findViewById(R.id.flip);
-        flipper.setFlipInterval(1000);
+        flipper.setFlipInterval(1500);
         Animation in = AnimationUtils.loadAnimation(getApplicationContext(),android.R.anim.slide_in_left);
         Animation out = AnimationUtils.loadAnimation(getApplicationContext(),android.R.anim.slide_out_right);
         flipper.setInAnimation(in);

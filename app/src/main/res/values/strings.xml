@@ -1,7 +1,13 @@
 <resources>
-    <string name="app_name">Driver_behaviour</string>
+    <string name="app_name">Insgate</string>
 
     <string name="title_activity_maps">Map</string>
 
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="main_title">Insgate</string>
+
+    <string name="google_key">AIzaSyCUotT8TcfJBSXft-_579n3V-mL8LJcq2w</string>
+
 </resources>
+
